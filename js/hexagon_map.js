@@ -2,11 +2,14 @@ function Map() {
 
     this.radius = 0;
     this.size = 0;
+    this.centerPosition;
     this.tiles = [];
 
     this.init = function (radius) {
-        this.size = radius * 2 - 1;
-        this.radius = radius
+        this.size = radius * 2 + 1;
+        this.radius = radius;
+        this.centerPosition = new Position2D.makePosition(radius-1, radius-1);
+
         for (var x = 0; x < this.size; x++) {
             this.tiles[x] = [];
             for (var y = 0; y < this.size; y++) {
@@ -14,12 +17,12 @@ function Map() {
                 tile.init(x, y, this);
                 this.tiles[x][y] = tile;
             }
-
         }
     };
 
 
     this.setTile = function (x, y, tile) {
+
         if (!this.doesTileExist(x, y)) {
             return false;
         }
@@ -37,17 +40,36 @@ function Map() {
     };
 
 
-    //this.getDistance(tile1, tile2)
+    this.calculateDistanceVector = function (startPoint, endPoint) {
+        var distanceX = endPoint.x - startPoint.x;
+        var distanceY = endPoint.y - startPoint.y;
+        var distanceZ = -(distanceX + distanceY);
+        return Vector3D.makeVector(distanceX, distanceY, distanceZ);
+
+    }
+
+
+    this.getDistance = function (startPoint, endPoint) {
+        var distanceVector = this.calculateDistanceVector(startPoint, endPoint);
+        return Math.max(
+            Math.abs(distanceVector.x),
+            Math.abs(distanceVector.y),
+            Math.abs(distanceVector.z)
+        );
+    };
 
 
     this.doesTileExist = function (x, y) {
-        if ( x < 0 || x >= this.size){
+        if (x < 0 && y < 0) {
             return false;
         }
 
-        var emptyTilesTop = Math.floor(Math.abs(x - this.radius) / 2);
-        var emptyTilesBottom = Math.ceil(Math.abs(x - this.radius) / 2);
-        return y >= emptyTilesBottom && y < this.size - emptyTilesBottom;
+        var tilePosition = new Position2D();
+        tilePosition.init(x, y);
+
+        var distance = this.getDistance(tilePosition, this.centerPosition);
+
+        return distance <= this.radius;
     };
 
 
@@ -55,47 +77,36 @@ function Map() {
         if (!this.doesTileExist(x, y)) {
             return [];
         }
+        var targetTilePosition = Position2D.makePosition(x,y);
 
-        var includeHalf = radius - Math.floor(radius) != 0;
-        radius = Math.floor(radius);
-        var results = [];
-        var odd = x % 2 == 1;
+        var halfStep = radius - Math.floor(radius) != 0;
+        radius = Math.ceil(radius);
+        var result = [];
 
-        var startX = limit(x - radius, 0, this.size-1);
-        var endX = limit(x + radius, 0, this.size-1);
+        var startX = limit(x - radius, 0, this.size - 1);
+        var endX = limit(x + radius, 0, this.size - 1);
+        var startY = limit(y - radius, 0, this.size - 1);
+        var endY = limit(y + radius, 0, this.size - 1);
 
-        for (var indexX = startX; indexX < endX; indexX++) {
-            var emptyTilesTop;
-            var emptyTilesBottom;
-            if (odd){
-                emptyTilesTop = Math.floor(Math.abs(indexX - x) / 2);
-                emptyTilesBottom = Math.ceil(Math.abs(indexX - x) / 2);
-            }
-            else {
-                emptyTilesTop = Math.ceil(Math.abs(indexX - x) / 2);
-                emptyTilesBottom = Math.floor(Math.abs(indexX - x) / 2);
-            }
-
-            var startY = limit(y - (radius - emptyTilesTop), 0, this.size-1);
-            var endY = limit(y + (radius - emptyTilesBottom), 0, this.size-1);
+        for (var indexX = startX; indexX <= endX; indexX++) {
             for (var indexY = startY; indexY <= endY; indexY++) {
-                results.push(this.getTile(indexX, indexY));
+                var position = Position2D.makePosition(indexX, indexY);
+                var distance = this.getDistance(position, targetTilePosition);
+                if ( distance <= radius) {
+                    if (distance == radius && halfStep){
+                        var distanceVector = this.calculateDistanceVector(position, targetTilePosition);
+                        if (!distanceVector.isOrthogonalToBaseVector()){
+                            result.push(this.getTile(indexX, indexY));
+                        }
+                    }
+                    else{
+                        result.push(this.getTile(indexX, indexY));
+                    }
+                }
             }
         }
 
+        return result;
     };
 }
-
-Map.RANGE_0 = 0;
-Map.RANGE_1_0 = 1;
-Map.RANGE_1_5 = 2;
-Map.RANGE_2_0 = 3;
-Map.RANGE_2_5 = 4;
-Map.RANGE_3_0 = 5;
-Map.RANGE_3_5 = 6;
-Map.RANGE_4_0 = 7;
-Map.RANGE_4_5 = 8;
-Map.RANGE_5_0 = 9;
-Map.RANGE_5_5 = 10;
-Map.RANGE_6_0 = 11;
 
