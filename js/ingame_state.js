@@ -27,15 +27,15 @@ function IngameState() {
     
     light.castShadow = true;
     
-    light.shadowCameraNear = 0;
-    light.shadowCameraFar = 15;
-    
-    light.shadowCameraLeft = -5;
-    light.shadowCameraRight = 5;
-    light.shadowCameraTop = 5;
-    light.shadowCameraBottom = -5;
-    
     light.shadowCameraVisible = true;
+    
+    light.shadowCameraNear = -5;
+    light.shadowCameraFar = 25;
+    
+    light.shadowCameraLeft = -10;
+    light.shadowCameraRight = 10;
+    light.shadowCameraTop = 10;
+    light.shadowCameraBottom = -10;
     
     s.add(light);
     
@@ -59,10 +59,10 @@ function IngameState() {
     this.cube.rotation.y += 1.5 * timer.delta;
     this.lookAtX += 0.3 * timer.delta;
     var results = cam.getObjectsAtCoords(mouse.x, mouse.y, s.children);
-    console.log(mouse.x, mouse.y);
+    //console.log(mouse.x, mouse.y);
     if(results.length > 0) {
-      console.log(mouse.x, mouse.y);
-      console.log(mouse.x, mouse.y, results[0]);
+      //console.log(mouse.x, mouse.y);
+      //console.log(mouse.x, mouse.y, results[0]);
     }
   };
   
