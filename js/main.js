@@ -15,6 +15,8 @@ var renderer;
 
 var cam;
 var s;
+var shaders;
+
 
 
 jQuery(document).ready(function() {
